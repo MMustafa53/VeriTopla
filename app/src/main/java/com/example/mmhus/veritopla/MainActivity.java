@@ -1,13 +1,22 @@
 package com.example.mmhus.veritopla;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,10 +27,16 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Time;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO;
 
@@ -35,8 +50,34 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     private Camera cmr;
     MediaRecorder mr;
     private boolean isRecording = false;
-
     public static final int MEDIA_TYPE_VIDEO =2;
+
+    final int GPS_SENSORNO = 0;
+    final int YAZIM_SENSORNO = GPS_SENSORNO + 1;
+    int sensorNo = 0;
+
+    float[] accDeger = new float[]{0, 0, 0};
+    float[] graDeger = new float[]{0, 0, 0};
+    float[] laDeger = new float[]{0, 0, 0};
+    float[] gyDeger = new float[]{0, 0, 0};
+
+    //### Managerler ####
+    SensorManager sm;
+    LocationManager lm;
+    //###################
+
+    //### Diğer Değişkenler ###
+    int durum = 0;
+    File dosya, dosya2;
+    FileWriter yaz, yazL;
+    BufferedWriter yazici,yaziciL;
+    String satir = "", satirloc="";
+    String sensor="";
+    int counter = 1;
+    int sayac = 1;
+    int kont = 1;
+    boolean isBasladi = false;
+    String timeStampp, timeStamppp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,9 +91,11 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         sh.addCallback(this);
         sh.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         cmr = getCameraInstance();
+        lm = (LocationManager) getSystemService(LOCATION_SERVICE);
+        sm = (SensorManager) getSystemService(SENSOR_SERVICE);
         //sh.setFixedSize(300,300);
         /*Toast.makeText(getApplicationContext(),"BASLADI",Toast.LENGTH_SHORT).show();
-
+        kont =1;
         zaman = new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -64,6 +107,162 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     public void setBaslat(View V) {
 
+        try {
+            if (durum == 0) {
+                //FTPText.setText("");
+                Toast.makeText(getApplicationContext(), "GPS bağlantısı sağlanır sağlanmaz işlemler başlayacak!", Toast.LENGTH_LONG).show();
+                durum = 1;
+                baslat.setText("Durdur");
+
+                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
+                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_NORMAL);
+                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GRAVITY), SensorManager.SENSOR_DELAY_NORMAL);
+                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), SensorManager.SENSOR_DELAY_NORMAL);
+
+                try {
+                    Criteria kriterler = new Criteria();
+                    kriterler.setAccuracy(Criteria.ACCURACY_FINE);
+                    kriterler.setAltitudeRequired(false);
+                    kriterler.setSpeedRequired(true);
+                    kriterler.setPowerRequirement(Criteria.POWER_HIGH);
+                    //kriterler.setCostAllowed(false);
+
+                    String bilgiSaglayici = lm.getBestProvider(kriterler, true);
+                    if (bilgiSaglayici == null) {
+                        List<String> bilgiSaglayicilar = lm.getAllProviders();
+
+                        for (String tempSaglayici : bilgiSaglayicilar) {
+                            if (lm.isProviderEnabled(tempSaglayici))
+                                bilgiSaglayici = tempSaglayici;
+                        }
+                    }
+
+                    if (lm.isProviderEnabled(bilgiSaglayici)) {
+                        LocationListener locationListener = new LocationListener() {
+
+                            @Override
+                            public void onLocationChanged(Location location) {
+                                timeStamppp = SimpleDateFormat.getTimeInstance().format(new Date());
+                                //timeStampp = new SimpleDateFormat("HHmmss").format(new Date());
+
+                                    String hiz = String.valueOf(location.getSpeed() * 3.6);
+                                    satirloc = (location.getLatitude() + ";" + location.getLongitude() + ";" + hiz+";"+timeStamppp);
+                                    try {
+                                        yaziciL.write(satirloc+"\n");
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    if(kont==1){
+                                        Toast.makeText(getApplicationContext(),"GPS VERİLERİ ALINMAYA BAŞLANDI",Toast.LENGTH_LONG).show();
+                                        isBasladi = true;
+                                        kont++;
+                                    }
+
+
+
+
+                            }
+
+                            @Override
+                            public void onStatusChanged(String provider, int status, Bundle extras) {
+                            }
+
+                            @Override
+                            public void onProviderEnabled(String provider) {
+                                Toast.makeText(getApplicationContext(), "GPS Verisi Alınıyor!", Toast.LENGTH_LONG).show();
+                            }
+
+                            @Override
+                            public void onProviderDisabled(String provider) {
+                                Toast.makeText(getApplicationContext(), "GPS Bağlantı Kapandı!", Toast.LENGTH_LONG).show();
+                            }
+                        };
+                        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                            ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                        } else if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                            ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                        } else if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                            ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                        }
+
+                        lm.requestLocationUpdates(bilgiSaglayici, 0, 0, locationListener);
+                    } else {
+                        sm.unregisterListener(this);
+                        Toast.makeText(getApplicationContext(), "Konum sağlayıcısı kapalı!!!", Toast.LENGTH_LONG).show();
+                        durum = 0;
+                        baslat.setText("Başlat");
+                    }
+
+                } catch (Exception e) {
+                    Log.e("Hata!", e.getMessage());
+                    e.printStackTrace();
+                }
+                DosyaOlustur();
+            } else {
+                isBasladi = false;
+                durum = 0;
+                counter = 1;
+                baslat.setText("Başlat");
+                sm.unregisterListener(this);
+                yazici.close();
+                yaziciL.close();
+
+            }
+        } catch (Exception e) {
+            Log.e("Hata!", e.getMessage());
+            e.printStackTrace();
+        }
+
+    }
+
+    private void DosyaOlustur() {
+        try {
+
+            //SimpleDateFormat ft = new SimpleDateFormat("dd.MM.yyyy HH:mm.ss");
+            //String dosyaAdi = ft.format(new Date()) + ".csv";
+            timeStampp = SimpleDateFormat.getTimeInstance().format(new Date());
+            String dosyaAdi = "Veri.csv";
+            String dosyaAdiL = "Loc.csv";
+
+
+            File klasor = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),"Veriler");
+            if(!klasor.exists()){
+                if(!klasor.mkdirs()){
+                    Log.e("dosyaa","Dosya oluluşturulamadı");
+                }
+            }
+
+            dosya = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES+"/Veriler"),dosyaAdi);
+            if (!dosya.exists()) {
+                //dosya.mkdirs();
+                dosya.createNewFile();
+            }
+
+            yaz = new FileWriter(dosya, true);
+            yazici = new BufferedWriter(yaz);
+
+            yazici.write("AccX;AccY;AccZ;GraX;GraY;GraZ;LAX;LAY;LAZ;GyroX;GyroY;GyroZ;Time2\n");
+
+            dosya2 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES+"/Veriler"),dosyaAdiL);
+            if(!dosya2.exists()){
+                dosya2.createNewFile();
+            }
+            yazL = new FileWriter(dosya2,true);
+            yaziciL = new BufferedWriter(yazL);
+            yaziciL.write("Lat;Long;Hız;Time");
+        } catch (Exception e) {
+            Log.e("Hata!", e.getMessage());
+            e.printStackTrace();
+        }
+        sayac ++;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        cmr = getCameraInstance();
+        prepareVideoRecorder();
     }
 
     public void setKaydet(View v){
@@ -92,11 +291,11 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),"Video Kayıt");
         if(!mediaStorageDir.exists()){
             if(!mediaStorageDir.mkdirs()){
-                Log.e("dosyaa","Dosya olultutlamadı");
+                Log.e("dosyaa","Dosya oluşturulamadı");
                 return null;
             }
         }
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = SimpleDateFormat.getDateTimeInstance().format(new Date());
         File mediaFile = new File(mediaStorageDir.getPath()+File.separator+"VID"+timeStamp+".mp4");
         return mediaFile;
     }
@@ -183,12 +382,49 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
 
-        cmr.stopPreview();
-        cmr.release();
     }
 
+    @SuppressLint("DefaultLocale")
     @Override
     public void onSensorChanged(SensorEvent event) {
+        Sensor sensor = event.sensor;
+        try{
+            if(sensor.getType() == Sensor.TYPE_ACCELEROMETER){
+                accDeger[0] = event.values[0];
+                accDeger[1] = event.values[1];
+                accDeger[2] = event.values[2];
+            }
+
+            if(sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION){
+                laDeger[0] = event.values[0];
+                laDeger[1] = event.values[1];
+                laDeger[2] = event.values[2];
+            }
+
+            if(sensor.getType() == Sensor.TYPE_GRAVITY){
+                graDeger[0] = event.values[0];
+                graDeger[1] = event.values[1];
+                graDeger[2] = event.values[2];
+            }
+
+            if(sensor.getType() == Sensor.TYPE_GYROSCOPE){
+                gyDeger[0] = event.values[0];
+                gyDeger[1] = event.values[1];
+                gyDeger[2] = event.values[2];
+            }
+            if(isBasladi) {
+                timeStampp = SimpleDateFormat.getTimeInstance().format(new Date());
+                satir = String.format("%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;", accDeger[0], accDeger[1], accDeger[2], graDeger[0], graDeger[1], graDeger[2], laDeger[0], laDeger[1], laDeger[2], gyDeger[0], gyDeger[1], gyDeger[2]);
+                satir += timeStampp;
+                Log.d("Eşleşti", satir);
+                yazici.write(satir + "\n");
+                satir = "";
+            }
+
+
+        } catch (Exception e) {
+            Log.e("Hata!", e.getMessage());
+        }
 
     }
 
