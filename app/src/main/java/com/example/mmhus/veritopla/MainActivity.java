@@ -114,10 +114,10 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 durum = 1;
                 baslat.setText("Durdur");
 
-                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
-                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_NORMAL);
-                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GRAVITY), SensorManager.SENSOR_DELAY_NORMAL);
-                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), SensorManager.SENSOR_DELAY_NORMAL);
+                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI);
+                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_UI);
+                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GRAVITY), SensorManager.SENSOR_DELAY_UI);
+                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), SensorManager.SENSOR_DELAY_UI);
 
                 try {
                     Criteria kriterler = new Criteria();
@@ -157,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                                         Toast.makeText(getApplicationContext(),"GPS VERİLERİ ALINMAYA BAŞLANDI",Toast.LENGTH_LONG).show();
                                         isBasladi = true;
                                         kont++;
+                                        kaydet.performClick();
                                     }
 
 
@@ -204,6 +205,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 durum = 0;
                 counter = 1;
                 baslat.setText("Başlat");
+                kaydet.performClick();
                 sm.unregisterListener(this);
                 yazici.close();
                 yaziciL.close();
@@ -234,23 +236,27 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             }
 
             dosya = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES+"/Veriler"),dosyaAdi);
-            if (!dosya.exists()) {
-                //dosya.mkdirs();
-                dosya.createNewFile();
-            }
-
             yaz = new FileWriter(dosya, true);
             yazici = new BufferedWriter(yaz);
 
-            yazici.write("AccX;AccY;AccZ;GraX;GraY;GraZ;LAX;LAY;LAZ;GyroX;GyroY;GyroZ;Time2\n");
+            if (!dosya.exists()) {
+                //dosya.mkdirs();
+                dosya.createNewFile();
+                yazici.write("AccX;AccY;AccZ;GraX;GraY;GraZ;LAX;LAY;LAZ;GyroX;GyroY;GyroZ;Time2\n");
+            }
+
+
+
 
             dosya2 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES+"/Veriler"),dosyaAdiL);
-            if(!dosya2.exists()){
-                dosya2.createNewFile();
-            }
             yazL = new FileWriter(dosya2,true);
             yaziciL = new BufferedWriter(yazL);
-            yaziciL.write("Lat;Long;Hız;Time");
+
+            if(!dosya2.exists()){
+                dosya2.createNewFile();
+                yaziciL.write("Lat;Long;Hız;Time");
+            }
+
         } catch (Exception e) {
             Log.e("Hata!", e.getMessage());
             e.printStackTrace();
@@ -262,7 +268,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     protected void onResume() {
         super.onResume();
         cmr = getCameraInstance();
-        prepareVideoRecorder();
+//        prepareVideoRecorder();
     }
 
     public void setKaydet(View v){
