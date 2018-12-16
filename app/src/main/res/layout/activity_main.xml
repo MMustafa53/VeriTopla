@@ -24,9 +24,11 @@
     <Button
         android:id="@+id/baslat"
         android:layout_width="wrap_content"
-        android:layout_height="22dp"
+        android:layout_height="57dp"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
         android:layout_marginBottom="8dp"
         android:background="@android:color/transparent"
         android:onClick="setBaslat"
@@ -34,6 +36,7 @@
         android:textColor="@android:color/holo_blue_light"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/svYuzey"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <SurfaceView

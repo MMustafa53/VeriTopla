@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     File dosya, dosya2;
     FileWriter yaz, yazL;
     BufferedWriter yazici,yaziciL;
-    String satir = "", satirloc="";
+    String satir = "", satirloc="",test;
     String sensor="";
     int counter = 1;
     int sayac = 1;
@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
         baslat = findViewById(R.id.baslat);
         kaydet = findViewById(R.id.kaydet);
+        kaydet.setVisibility(View.INVISIBLE);
         svYuzey =findViewById(R.id.svYuzey);
         sh = svYuzey.getHolder();
         sh.addCallback(this);
@@ -118,7 +119,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_UI);
                 sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GRAVITY), SensorManager.SENSOR_DELAY_UI);
                 sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), SensorManager.SENSOR_DELAY_UI);
-
+                girisEkrani giris = new girisEkrani();
+                test = giris.testAdi;
                 try {
                     Criteria kriterler = new Criteria();
                     kriterler.setAccuracy(Criteria.ACCURACY_FINE);
@@ -205,7 +207,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 durum = 0;
                 counter = 1;
                 baslat.setText("Başlat");
-                kaydet.performClick();
+                if(isRecording)
+                    kaydet.performClick();
                 sm.unregisterListener(this);
                 yazici.close();
                 yaziciL.close();
@@ -228,13 +231,12 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             String dosyaAdiL = "Loc.csv";
 
 
-            File klasor = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),"Veriler");
+            File klasor = new File(Environment.getExternalStoragePublicDirectory("AAAAAA"),"Veriler");
             if(!klasor.exists()){
                 if(!klasor.mkdirs()){
                     Log.e("dosyaa","Dosya oluluşturulamadı");
                 }
             }
-
             dosya = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES+"/Veriler"),dosyaAdi);
             yaz = new FileWriter(dosya, true);
             yazici = new BufferedWriter(yaz);
