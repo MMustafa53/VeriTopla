@@ -2,6 +2,7 @@ package com.example.mmhus.veritopla;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Sensor;
@@ -16,6 +17,7 @@ import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -23,6 +25,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -81,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     static String testAdi;
     girisEkrani giris;
     static String pathh;
+    PowerManager.WakeLock wakeLock;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,6 +100,10 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         cmr = getCameraInstance();
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         sm = (SensorManager) getSystemService(SENSOR_SERVICE);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                "MyApp::MyWakelockTag");
 
         //sh.setFixedSize(300,300);
         /*Toast.makeText(getApplicationContext(),"BASLADI",Toast.LENGTH_SHORT).show();
@@ -109,13 +117,13 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         },10000);*/
     }
 
+    @SuppressLint("WakelockTimeout")
     public void setBaslat(View V) {
 
-
-        //testadi = giris.testAdi;
         try {
             if (durum == 0) {
                 //FTPText.setText("");
+                wakeLock.acquire();
                 Toast.makeText(getApplicationContext(), "GPS bağlantısı sağlanır sağlanmaz işlemler başlayacak!", Toast.LENGTH_LONG).show();
                 durum = 1;
                 baslat.setText("Durdur");
@@ -203,6 +211,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 }
                 DosyaOlustur();
             } else {
+                wakeLock.release();
                 isBasladi = false;
                 durum = 0;
                 counter = 1;
@@ -212,7 +221,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 sm.unregisterListener(this);
                 yazici.close();
                 yaziciL.close();
-
             }
         } catch (Exception e) {
             Log.e("Hata!", e.getMessage());
