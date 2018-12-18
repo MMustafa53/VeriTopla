@@ -14,16 +14,19 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class girisEkrani extends AppCompatActivity {
 
     TextView tdate;
-    String testAdi,timeStamp;
+    String testAdi;
     Button baslat;
     EditText et;
+    String dateString;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,8 +45,7 @@ public class girisEkrani extends AppCompatActivity {
                             public void run() {
 
                                 long date = System.currentTimeMillis();
-                                SimpleDateFormat sdf = new SimpleDateFormat("MMM dd yyyy\nhh-mm-ss a");
-                                String dateString = sdf.format(date);
+                                dateString = SimpleDateFormat.getDateInstance().format(new Date());
                                 tdate.setText(dateString);
                             }
                         });
@@ -61,24 +63,8 @@ public class girisEkrani extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO}, 1);
         }
         testAdi = et.getText().toString();
-        testAdi += "//";
-        timeStamp = SimpleDateFormat.getDateTimeInstance().format(new Date());
-        testAdi += timeStamp;
-        File klasor = new File(Environment.getExternalStoragePublicDirectory("Veri Topla"), testAdi);
-        if (!klasor.exists()) {
-            if (!klasor.mkdirs()) {
-                Log.e("dosyaa", "Dosya oluluşturulamadı");
-                }
-            else
-            {
-                Log.e("dosya","mkdir var");
-            }
-        }
-        else{
-                Log.e("dosya","exists var");
-                Toast.makeText(getApplicationContext(),"Bu isimde bir test kalsörü bulunmakta",Toast.LENGTH_LONG).show();
-            }
-
+        testAdi += dateString;
+        MainActivity.testAdi = testAdi;
         Intent aktivite = new Intent(getApplicationContext(),MainActivity.class);
         startActivity(aktivite);
         finish();

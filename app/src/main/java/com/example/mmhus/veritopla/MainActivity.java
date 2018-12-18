@@ -78,7 +78,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     int kont = 1;
     boolean isBasladi = false;
     String timeStampp, timeStamppp;
-
+    static String testAdi;
+    girisEkrani giris;
+    static String pathh;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         cmr = getCameraInstance();
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         sm = (SensorManager) getSystemService(SENSOR_SERVICE);
+
         //sh.setFixedSize(300,300);
         /*Toast.makeText(getApplicationContext(),"BASLADI",Toast.LENGTH_SHORT).show();
         kont =1;
@@ -108,6 +111,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     public void setBaslat(View V) {
 
+
+        //testadi = giris.testAdi;
         try {
             if (durum == 0) {
                 //FTPText.setText("");
@@ -115,10 +120,10 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 durum = 1;
                 baslat.setText("Durdur");
 
-                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI);
-                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_UI);
-                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GRAVITY), SensorManager.SENSOR_DELAY_UI);
-                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), SensorManager.SENSOR_DELAY_UI);
+                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
+                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_NORMAL);
+                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GRAVITY), SensorManager.SENSOR_DELAY_NORMAL);
+                sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE), SensorManager.SENSOR_DELAY_NORMAL);
                 girisEkrani giris = new girisEkrani();
                 test = giris.testAdi;
                 try {
@@ -150,21 +155,16 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                                     String hiz = String.valueOf(location.getSpeed() * 3.6);
                                     satirloc = (location.getLatitude() + ";" + location.getLongitude() + ";" + hiz+";"+timeStamppp);
                                     try {
-                                        yaziciL.write(satirloc+"\n");
+                                    yaziciL.write(satirloc+"\n");
                                     } catch (IOException e) {
-                                        e.printStackTrace();
+                                    e.printStackTrace();
                                     }
-
                                     if(kont==1){
                                         Toast.makeText(getApplicationContext(),"GPS VERİLERİ ALINMAYA BAŞLANDI",Toast.LENGTH_LONG).show();
                                         isBasladi = true;
                                         kont++;
-                                        kaydet.performClick();
+                                       kaydet.performClick();
                                     }
-
-
-
-
                             }
 
                             @Override
@@ -227,17 +227,26 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             //SimpleDateFormat ft = new SimpleDateFormat("dd.MM.yyyy HH:mm.ss");
             //String dosyaAdi = ft.format(new Date()) + ".csv";
             timeStampp = SimpleDateFormat.getTimeInstance().format(new Date());
-            String dosyaAdi = "Veri.csv";
-            String dosyaAdiL = "Loc.csv";
+            String dosyaAdi = "Veri.txt";
+            String dosyaAdiL = "Konum.txt";
 
 
-            File klasor = new File(Environment.getExternalStoragePublicDirectory("AAAAAA"),"Veriler");
-            if(!klasor.exists()){
-                if(!klasor.mkdirs()){
-                    Log.e("dosyaa","Dosya oluluşturulamadı");
+            File klasor = new File(Environment.getExternalStoragePublicDirectory("Veri Topla/"+testAdi), "Veriler");
+            if (!klasor.exists()) {
+                if (!klasor.mkdirs()) {
+                    Log.e("dosya", "Dosya oluluşturulamadı");
+                }
+                else
+                {
+                    Log.e("dosya","mkdir var");
                 }
             }
-            dosya = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES+"/Veriler"),dosyaAdi);
+            else{
+                Log.e("dosya","exists var");
+                Toast.makeText(getApplicationContext(),"Bu isimde bir test kalsörü bulunmakta",Toast.LENGTH_LONG).show();
+            }
+            pathh = "Veri Topla/"+testAdi;
+            dosya = new File(Environment.getExternalStoragePublicDirectory("Veri Topla/"+testAdi+"/Veriler"),dosyaAdi);
             yaz = new FileWriter(dosya, true);
             yazici = new BufferedWriter(yaz);
 
@@ -247,10 +256,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 yazici.write("AccX;AccY;AccZ;GraX;GraY;GraZ;LAX;LAY;LAZ;GyroX;GyroY;GyroZ;Time2\n");
             }
 
-
-
-
-            dosya2 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES+"/Veriler"),dosyaAdiL);
+            dosya2 = new File(Environment.getExternalStoragePublicDirectory("Veri Topla/"+testAdi+"/Veriler"),dosyaAdiL);
             yazL = new FileWriter(dosya2,true);
             yaziciL = new BufferedWriter(yazL);
 
@@ -296,14 +302,14 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     }
 
     private static File getOutputMediaFile(int type){
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),"Video Kayıt");
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(pathh),"Video Kayıt");
         if(!mediaStorageDir.exists()){
             if(!mediaStorageDir.mkdirs()){
                 Log.e("dosyaa","Dosya oluşturulamadı");
                 return null;
             }
         }
-        String timeStamp = SimpleDateFormat.getDateTimeInstance().format(new Date());
+        String timeStamp = SimpleDateFormat.getTimeInstance().format(new Date());
         File mediaFile = new File(mediaStorageDir.getPath()+File.separator+"VID"+timeStamp+".mp4");
         return mediaFile;
     }
@@ -348,6 +354,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         mr.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         mr.setVideoSource(MediaRecorder.VideoSource.CAMERA);
         mr.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
+        mr.setOrientationHint(90);
 //        mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
 //        mr.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 //        mr.setVideoEncoder(MediaRecorder.VideoEncoder.H263);
