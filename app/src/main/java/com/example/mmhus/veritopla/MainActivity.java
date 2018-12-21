@@ -3,7 +3,10 @@ package com.example.mmhus.veritopla;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -46,7 +49,7 @@ import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO;
 public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback ,SensorEventListener {
 
     Button baslat, kaydet;
-    TextView bilgitv;
+    TextView bilgitv,konumtv,vidtv;
     boolean zaman;
     private SurfaceView svYuzey;
     private SurfaceHolder sh;
@@ -93,6 +96,10 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         baslat = findViewById(R.id.baslat);
         kaydet = findViewById(R.id.kaydet);
         kaydet.setVisibility(View.INVISIBLE);
+        konumtv = findViewById(R.id.tvKonum);
+        vidtv = findViewById(R.id.tvVid);
+        konumtv.setTextColor(Color.RED);
+        vidtv.setTextColor(Color.RED);
         svYuzey =findViewById(R.id.svYuzey);
         sh = svYuzey.getHolder();
         sh.addCallback(this);
@@ -119,7 +126,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     @SuppressLint("WakelockTimeout")
     public void setBaslat(View V) {
-
         try {
             if (durum == 0) {
                 //FTPText.setText("");
@@ -169,6 +175,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                                     }
                                     if(kont==1){
                                         Toast.makeText(getApplicationContext(),"GPS VERİLERİ ALINMAYA BAŞLANDI",Toast.LENGTH_LONG).show();
+                                        konumtv.setTextColor(Color.GREEN);
                                         isBasladi = true;
                                         kont++;
                                        kaydet.performClick();
@@ -203,6 +210,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                         Toast.makeText(getApplicationContext(), "Konum sağlayıcısı kapalı!!!", Toast.LENGTH_LONG).show();
                         durum = 0;
                         baslat.setText("Başlat");
+                        konumtv.setTextColor(Color.RED);
                     }
 
                 } catch (Exception e) {
@@ -215,6 +223,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 isBasladi = false;
                 durum = 0;
                 counter = 1;
+                konumtv.setTextColor(Color.RED);
                 baslat.setText("Başlat");
                 if(isRecording)
                     kaydet.performClick();
@@ -293,6 +302,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             releaseMediaRecorder();
             cmr.lock();
             Toast.makeText(getApplicationContext(),"Video Kayıt Durduruldu",Toast.LENGTH_LONG).show();
+            vidtv.setTextColor(Color.RED);
             kaydet.setText(R.string.kaydetbtn);
             isRecording = false;
         }
@@ -300,6 +310,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             if(prepareVideoRecorder()){
                 mr.start();
                 Toast.makeText(getApplicationContext(),"Video Kayıt Başladı",Toast.LENGTH_LONG).show();
+                vidtv.setTextColor(Color.GREEN);
                 kaydet.setText("DURDUR");
                 isRecording= true;
             }
