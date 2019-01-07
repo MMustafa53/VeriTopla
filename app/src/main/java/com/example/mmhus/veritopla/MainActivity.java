@@ -18,6 +18,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -281,12 +282,14 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 dosya2.createNewFile();
                 yaziciL.write("Lat;Long;Hız;Time");
             }
+            //sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse(klasor)));
 
         } catch (Exception e) {
             Log.e("Hata!", e.getMessage());
             e.printStackTrace();
         }
         sayac ++;
+
     }
 
     @Override
