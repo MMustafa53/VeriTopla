@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     String satir = "", satirloc="",test;
     String sensor="";
     int counter = 1;
+    int countt = 0;
     int sayac = 1;
     int kont = 1;
     boolean isBasladi = false;
@@ -168,9 +169,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                                 //timeStampp = new SimpleDateFormat("HHmmss").format(new Date());
 
                                     String hiz = String.valueOf(location.getSpeed() * 3.6);
-                                    satirloc = (location.getLatitude() + ";" + location.getLongitude() + ";" + hiz+";"+timeStamppp);
+                                    satirloc = (location.getLatitude() + ";" + location.getLongitude() + ";" + hiz+";"+timeStamppp+"\n");
                                     try {
-                                    yaziciL.write(satirloc+"\n");
+                                    yaziciL.write(satirloc);
                                     } catch (IOException e) {
                                     e.printStackTrace();
                                     }
@@ -224,6 +225,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 isBasladi = false;
                 durum = 0;
                 counter = 1;
+                countt = 0;
                 konumtv.setTextColor(Color.RED);
                 baslat.setText("Başlat");
                 if(isRecording)
@@ -245,8 +247,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             //SimpleDateFormat ft = new SimpleDateFormat("dd.MM.yyyy HH:mm.ss");
             //String dosyaAdi = ft.format(new Date()) + ".csv";
             timeStampp = SimpleDateFormat.getTimeInstance().format(new Date());
-            String dosyaAdi = "Veri.txt";
-            String dosyaAdiL = "Konum.txt";
+            String dosyaAdi = "Veri"+timeStampp+".txt";
+            String dosyaAdiL = "Konum"+timeStampp+".txt";
 
 
             File klasor = new File(Environment.getExternalStoragePublicDirectory("Veri Topla/"+testAdi), "Veriler");
@@ -271,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             if (!dosya.exists()) {
                 //dosya.mkdirs();
                 dosya.createNewFile();
-                yazici.write("AccX;AccY;AccZ;GraX;GraY;GraZ;LAX;LAY;LAZ;GyroX;GyroY;GyroZ;Time2\n");
+
             }
 
             dosya2 = new File(Environment.getExternalStoragePublicDirectory("Veri Topla/"+testAdi+"/Veriler"),dosyaAdiL);
@@ -280,7 +282,13 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
             if(!dosya2.exists()){
                 dosya2.createNewFile();
-                yaziciL.write("Lat;Long;Hız;Time");
+
+            }
+
+            if (countt == 0){
+                yazici.write("AccX;AccY;AccZ;GraX;GraY;GraZ;LAX;LAY;LAZ;GyroX;GyroY;GyroZ;Time2\n");
+                yaziciL.write("Lat;Long;Hız;Time\n");
+                countt++;
             }
             //sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse(klasor)));
 
