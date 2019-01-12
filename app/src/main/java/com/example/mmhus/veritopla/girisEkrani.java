@@ -27,6 +27,7 @@ public class girisEkrani extends AppCompatActivity {
     Button baslat;
     EditText et;
     String dateString;
+    String timeString;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +47,8 @@ public class girisEkrani extends AppCompatActivity {
 
                                 long date = System.currentTimeMillis();
                                 dateString = SimpleDateFormat.getDateInstance().format(new Date());
-                                tdate.setText(dateString);
+                                timeString = SimpleDateFormat.getDateTimeInstance().format(new Date());
+                                tdate.setText(timeString);
                             }
                         });
                     }
